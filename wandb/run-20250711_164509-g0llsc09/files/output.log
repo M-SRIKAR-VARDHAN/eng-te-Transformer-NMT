@@ -1,0 +1,5 @@
+Using device: cpu
+['english', 'telugu']
+Max length of source sentence: 33
+Max length of target sentence: 29
+Preloading model csv_weights\transformer_model_latest.pt

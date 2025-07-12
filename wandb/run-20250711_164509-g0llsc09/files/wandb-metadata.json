@@ -1,0 +1,24 @@
+{
+  "os": "Windows-11-10.0.26100-SP0",
+  "python": "CPython 3.12.4",
+  "startedAt": "2025-07-11T11:15:09.093684Z",
+  "program": "train.ipynb",
+  "codePath": "train.ipynb",
+  "codePathLocal": "train.ipynb",
+  "email": "mangadoddis_ug_22@cse.nits.ac.in",
+  "root": "D:\\Daily Practice\\Transformers",
+  "host": "Srikar_Device",
+  "executable": "C:\\Program Files\\Python312\\python.exe",
+  "cpu_count": 14,
+  "cpu_count_logical": 20,
+  "disk": {
+    "/": {
+      "total": "783444602880",
+      "used": "243927347200"
+    }
+  },
+  "memory": {
+    "total": "16876888064"
+  },
+  "writerId": "6z8phqdisztaybpvnqu4i518uyr8ajc2"
+}
