@@ -1,7 +1,6 @@
 # Introduction to Transformers from Scratch
 ## project-overview
 
-Building a Transformer from Scratch
 Hey there! Welcome to this project where I'm building a Transformer model from scratch using PyTorch. My goal is to understand every single component of a Transformer, from how it processes words to how it focuses on important information and generates output. I'll explain each part in depth, as simply as possible. This project is all about deepening my knowledge of how Transformers work and how we can use them for various tasks
 
 ---
@@ -36,13 +35,17 @@ Imagine you have a machine that can read a sentence in one language and write it
 
 A transformer is a type of artificial intelligence model that learns to understand and generate human-like text by analyzing patterns in large amounts of text data.
 
-![iamge](path/to/your/transformer_image.png)
+![Transformer architecture example](imgs/1st.png)
+
+
 ---
 ## project-goals
 
 In this project, I'm aiming to use the Transformer model for Neural Machine Translation (NMT). Specifically, I'll be writing the code from scratch, focusing on the core Transformer blocks, and training the model to translate English to Telugu. 
 I'll save the trained model after each training "epoch" (a full pass through the training data). also the main thing is explaining each level neatly step by step with diagrams and code
-![image](path/to/your/transformer_image.png)
+
+![Machine Translation(seq-seq)](imgs/2.png)
+
 
 ---
 ## high-level-architecture
@@ -50,7 +53,8 @@ I'll save the trained model after each training "epoch" (a full pass through the
 Think of the Transformer as a “black box” for translation:
 
 Don't let the complex diagrams scare you! At its heart, a Transformer has a basic structure: an Encoder block and a Decoder block.
-![image](path/to/your/transformer_image.png)
+
+![Encoder-Decoder](imgs/3.png)
 
 1. **Encoder** transforms input tokens into context‑rich vectors.  
 2. **Decoder** takes those vectors and produces the translated output, one token at a time.
@@ -91,7 +95,8 @@ Now, let's add a bit more complexity. The Encoder and Decoder aren't just single
 
 Both the Encoder and Decoder are composed of N identical layers. Each encoder layer processes the input sequentially before passing its output to the next layer in the stack. Similarly, each decoder layer receives input from the final encoder layer (for cross-attention) and from the previous decoder layer. The original Transformer architecture used 6 encoder and 6 decoder layers, but this number (N) is flexible and can be adjusted.
 
-![image](path/to/your/transformer_image.png)
+![Transformer stack representation](imgs/4.png)
+
 
 ```
     # Create the encoder blocks
@@ -130,14 +135,16 @@ The encoder's primary function is to transform input tokens into contextualized 
 
 3) Feed-Forward Network: A simple neural network applied independently to each position, adding non-linearity and further transforming the representations.
 
-![image](path/to/your/transformer_image.png)
+![Encoder Block Visualizations](imgs/5.png)
+
 
 ---
 ### input-embeddings
 
 Before we even get to the Encoder block, we need to prepare our text input.
 
-![image](path/to/your/transformer_image.png)
+![Input Embeddings](imgs/6.png)
+
 
 The first step is to convert input tokens (words or subwords) into numerical vectors using embedding layers. These embeddings capture the semantic meaning of the tokens. 
 This process occurs only in the bottom-most encoder. All encoders receive fixed-size vectors (e.g., 512 dimensions). For the first encoder, these are the word embeddings; for subsequent encoders, they are the outputs of the encoder directly below.
@@ -162,11 +169,14 @@ Since Transformers process all words at once (unlike older models that read word
 
 Transformers lack a recurrence mechanism (like RNNs) to inherently understand sequence order. Therefore, positional encodings are added to the input embeddings. These encodings provide information about the absolute and relative position of each token in the sequence. They are generated using a combination of sine and cosine functions of varying frequencies, allowing them to scale to sentences of any length. Each dimension of the positional encoding uses a unique frequency and offset, with values typically ranging from -1 to 1.
 
-![image](path/to/your/transformer_image.png)
+![Positional Embeddings](imgs/7.png)
+
 
 Let's take an example sentence and calculate its positional encoding. Generally, even-indexed dimensions get a sine function, and odd-indexed dimensions get a cosine function based on the formula: PE(pos,2i)=sin(pos/10000^(2i/d_model)) and  PE(pos,2i+1)=cos(pos/10000^(2i/d_model)).
 
-![image](path/to/your/transformer_image.png)
+![POS Calculation example](imgs/8.png)
+
+
 ```
 class PositionalEncoding(nn.Module):
     def __init__(self , d_model, seq_len, dropout):
@@ -212,7 +222,8 @@ class Residual(nn.Module):
 This combined step helps to mitigate the vanishing gradient problem, which is crucial for training deeper neural networks effectively. This process is applied after both the self-attention and the feed-forward network within each block, ensuring stability and efficient information flow.
 
 This is formula for the layer normalization 
-![image](path/to/your/transformer_image.png)
+
+![Normalization Formula](imgs/9.png)
 
 This is the code for it 
 
@@ -230,17 +241,20 @@ This is the code for it
 ```
 
 This is visualization of normalization 
-![image](path/to/your/transformer_image.png)
 
-this is where and ow we use it in code 
-![image](path/to/your/transformer_image.png)
+![Normalization example](imgs/10.png)
+
+this is where we use it in code 
+
+![Normalization layer](imgs/10_5.png)
 
 ---
 ### feed-forward-network
 
 The normalized output (from the residual connection and layer normalization) then passes through a pointwise feed-forward network. This network consists of two linear layers with a ReLU activation function in between. It's applied independently to each position in the sequence After this, another residual connection and layer normalization step are applied. The input dimensions change from (batch_len,seq_len,d_model) to (batch_len,seq_len,d_ff) and back to (batch_len,seq_len,d_model), where d_ff is typically larger than d_model (e.g., 2048 vs. 512).
 
-![image](path/to/your/transformer_image.png)
+![Feed Forward layer](imgs/11.png)
+
 ```
 class FeedForwardBlock(nn.Module):
     def __init__(self , d_model , dff, dropout):
@@ -265,7 +279,7 @@ The Multi-Head Attention mechanism allows the model to simultaneously focus on d
 
 Initially, the input sequence is linearly projected into three different learned representations: Query (Q), Key (K), and Value (V).
 
-![image](path/to/your/transformer_image.png)
+![Complete Attention Flow](imgs/12.png)
 
 The initial transformation looks like this: (batch,seq_len,d_model) -> (batch,seq_len,d_model).
 
@@ -280,7 +294,9 @@ Key: A vector corresponding to each word or token in the input sequence.
 Value: Vectors that are associated with every key and are used to create the output of the attention layer. When a query and key have a high attention score, the corresponding value is emphasized in the output.
 
 Instead of performing a single attention function, Q, K, and V are projected h times into different smaller "heads." Each of these projected versions of Q, K, and V then undergoes the attention mechanism in parallel. This results in h separate attention outputs.
-![image](path/to/your/transformer_image.png)
+
+![Inside Attention Mechanism](imgs/13.png)
+
 The dimensions change from (batch,seq_len,d_model) -> (batch,seq_len, h , d_k), where  d_k=d_model/h.  We then transpose the dimensions to (batch ,h ,seq_len ,d_k) for parallel computation across heads.
 ```
         query = query.view(query.shape[0],query.shape[1],self.h,self.d_k).transpose(1,2)
@@ -293,28 +309,32 @@ next we pass them through self attention here
 
 The attention scores are calculated by performing a dot product matrix multiplication between the Query and Key vectors. This results in a score matrix that indicates how much focus each word should place on every other word in the sequence. A higher score signifies greater relevance.
 
-![image](path/to/your/transformer_image.png)
+![Attention Scores](imgs/14.png)
 
 ```
         attention_scores = (query @ key.transpose(-2,-1))/ math.sqrt(d_k)
 ```
   
 The scores are then scaled down by dividing them by the square root of the dimension of the query and key vectors. This step is implemented to ensure more stable gradients, as the multiplication of values can lead to excessively large effects.
-![image](path/to/your/transformer_image.png)
+
+![Scaling](imgs/15.png)
 
 
 Masking is then applied, especially in the decoder (and for padding in the encoder), to prevent positions from attending to subsequent positions (in the decoder) or padding tokens. The mask sets certain attention scores to a very large negative number (like -1e9), so that when a softmax is applied, these positions effectively get a probability of zero.
 
-![image](path/to/your/transformer_image.png)
+![Casual Masking](imgs/16.png)
 
 let me show you a visualization of complete pipline inside the attention block 
-![image](path/to/your/transformer_image.png)
+
+![Pipeline of MultiHeadAttention Block](imgs/17.png)
+
 ```
  attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
 ```
 Subsequently, a softmax function is applied to the adjusted scores to obtain the attention weights. These weights are probability values (ranging from 0 to 1), where higher values indicate more attention. Softmax emphasizes higher scores and diminishes lower ones, helping the model pinpoint crucial words.
 
-![image](path/to/your/transformer_image.png)
+![Softmax](imgs/18.png)
+
 ```
  attention_scores = attention_scores.softmax( dim = -1 )
 ```
@@ -331,7 +351,8 @@ Remember that before all the process starts, we break our queries, keys and valu
 
 This ensemble passes through a final linear layer, much like a filter that fine-tunes their collective performance. The beauty here lies in the diversity of learning across each head, enriching the encoder model with a robust and multifaceted understanding.
 
-![image](path/to/your/transformer_image.png)
+![Attention Scores](imgs/19.png)
+
 ```
 return (attention_scores @ value),attention_scores
 ```
@@ -346,7 +367,8 @@ This careful encoding paves the way for the decoder, guiding it to pay attention
 
 Think of it like building a tower, where you can stack up N encoder layers. Each layer in this stack gets a chance to explore and learn different facets of attention, much like layers of knowledge. This not only diversifies the understanding but could significantly amplify the predictive capabilities of the transformer network.
 
-![image](path/to/your/transformer_image.png)
+![Encoder input-output](imgs/20.png)
+
 ```
 class EncoderBlock(nn.Module):
     def __init__(self, self_attention_block , feed_forward_layer , dropout):
@@ -372,7 +394,8 @@ However, it introduces a third sub-layer: Cross-Attention. This layer allows the
 This is crucial for tasks like machine translation, where the decoder needs to align its generated output with the information from the input sentence. 
 The src_mask is used in cross-attention to mask padding tokens from the encoder output, while trgt_mask (a causal mask) is used in self-attention within the decoder to prevent it from looking at future tokens when generating the current one.
 
-![image](path/to/your/transformer_image.png)
+![Decoder Block](imgs/21.png)
+
 ```
 class DecoderBlock (nn.Module):
     def __init__(self , self_attention_block , cross_attention_block ,feed_forward_layer , dropout ):
@@ -390,7 +413,9 @@ class DecoderBlock (nn.Module):
         return x
 ```
 next let me show you the specific structure on how the cross attention works wrt to the above code here 
-![image](path/to/your/transformer_image.png)
+
+![Cross Head Attention](imgs/22.png)
+
 ```
  x = self.residual[1](x , lambda x : self.cross_attention_block(x,encoder_output ,encoder_output ,src_mask))
 ```
@@ -404,7 +429,7 @@ The Projection Layer is a simple linear layer that transforms this vector into a
 A log_softmax function is then applied, which converts these values into log-probabilities for each word in the target vocabulary. 
 The word with the highest log-probability is then selected as the most likely next word in the translated sentence.
 
-![image](path/to/your/transformer_image.png)
+![Projection Layer](imgs/23.png)
 
 ```
 class ProjectionLayer(nn.Module):
@@ -429,7 +454,7 @@ The encode method takes the source input and its mask, applies embeddings and po
 
 The build_transformer function is a factory function that constructs an entire Transformer model by creating instances of all the necessary sub-modules (embedding layers, positional encodings, attention blocks, feed-forward blocks, encoder/decoder blocks, and the final transformer wrapper) and connecting them. It also initializes the model's parameters using Xavier uniform initialization for better training stability.
 
-![image](path/to/your/transformer_image.png)
+![Complete Transformer Image](imgs/24.png)
 
 ```
 class Transformer ( nn.Module):
