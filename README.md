@@ -50,6 +50,7 @@ I'll save the trained model after each training "epoch" (a full pass through the
 Think of the Transformer as a “black box” for translation:
 
 Don't let the complex diagrams scare you! At its heart, a Transformer has a basic structure: an Encoder block and a Decoder block.
+![image](path/to/your/transformer_image.png)
 
 1. **Encoder** transforms input tokens into context‑rich vectors.  
 2. **Decoder** takes those vectors and produces the translated output, one token at a time.
@@ -231,6 +232,9 @@ This is the code for it
 This is visualization of normalization 
 ![image](path/to/your/transformer_image.png)
 
+this is where and ow we use it in code 
+![image](path/to/your/transformer_image.png)
+
 ---
 ### feed-forward-network
 
@@ -270,9 +274,13 @@ The initial transformation looks like this: (batch,seq_len,d_model) -> (batch,se
         key = self.w_k(k)
         value = self.w_v(v)
 ```
-
+It computes attention scores based on three components:
+Query: A vector that represents a token from the input sequence text.
+Key: A vector corresponding to each word or token in the input sequence.
+Value: Vectors that are associated with every key and are used to create the output of the attention layer. When a query and key have a high attention score, the corresponding value is emphasized in the output.
 
 Instead of performing a single attention function, Q, K, and V are projected h times into different smaller "heads." Each of these projected versions of Q, K, and V then undergoes the attention mechanism in parallel. This results in h separate attention outputs.
+![image](path/to/your/transformer_image.png)
 The dimensions change from (batch,seq_len,d_model) -> (batch,seq_len, h , d_k), where  d_k=d_model/h.  We then transpose the dimensions to (batch ,h ,seq_len ,d_k) for parallel computation across heads.
 ```
         query = query.view(query.shape[0],query.shape[1],self.h,self.d_k).transpose(1,2)
@@ -282,11 +290,6 @@ The dimensions change from (batch,seq_len,d_model) -> (batch,seq_len, h , d_k), 
 ```
 
 next we pass them through self attention here 
-
-It computes attention scores based on three components:
-Query: A vector that represents a token from the input sequence text.
-Key: A vector corresponding to each word or token in the input sequence.
-Value: Vectors that are associated with every key and are used to create the output of the attention layer. When a query and key have a high attention score, the corresponding value is emphasized in the output.
 
 The attention scores are calculated by performing a dot product matrix multiplication between the Query and Key vectors. This results in a score matrix that indicates how much focus each word should place on every other word in the sequence. A higher score signifies greater relevance.
 
@@ -302,6 +305,9 @@ The scores are then scaled down by dividing them by the square root of the dimen
 
 Masking is then applied, especially in the decoder (and for padding in the encoder), to prevent positions from attending to subsequent positions (in the decoder) or padding tokens. The mask sets certain attention scores to a very large negative number (like -1e9), so that when a softmax is applied, these positions effectively get a probability of zero.
 
+![image](path/to/your/transformer_image.png)
+
+let me show you a visualization of complete pipline inside the attention block 
 ![image](path/to/your/transformer_image.png)
 ```
  attention_scores = attention_scores.masked_fill(mask == 0, -1e9)
@@ -325,6 +331,7 @@ Remember that before all the process starts, we break our queries, keys and valu
 
 This ensemble passes through a final linear layer, much like a filter that fine-tunes their collective performance. The beauty here lies in the diversity of learning across each head, enriching the encoder model with a robust and multifaceted understanding.
 
+![image](path/to/your/transformer_image.png)
 ```
 return (attention_scores @ value),attention_scores
 ```
@@ -338,6 +345,7 @@ The output of the final encoder layer is a set of vectors, each representing the
 This careful encoding paves the way for the decoder, guiding it to pay attention to the right words in the input when it's time to decode.
 
 Think of it like building a tower, where you can stack up N encoder layers. Each layer in this stack gets a chance to explore and learn different facets of attention, much like layers of knowledge. This not only diversifies the understanding but could significantly amplify the predictive capabilities of the transformer network.
+
 ![image](path/to/your/transformer_image.png)
 ```
 class EncoderBlock(nn.Module):
